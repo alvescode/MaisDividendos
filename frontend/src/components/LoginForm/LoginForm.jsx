@@ -1,44 +1,24 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie'
-
-const banco = axios.create({
-  baseURL: "http://localhost:3001/",
-  timeout: 1000,
-  headers: {},
-});
-
+import server from "../../axios"
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ email: '', senha: '', });
-  const navigate = useNavigate();
+  const navigate = useNavigate();// window.location.href = '/userarea'; //alternativa
 
   const handleSubmit = async(e) => {
     e.preventDefault();
     try {
-      const {data} = await banco.post("/login", formData);
-      console.log('Login Form -> Resposta : ',data)
-      //fazer todas as requisições com o uso do token
-      
-      
-      const objeto = data.data.result
-      console.log(objeto)
+      const {data} = await server.post("/login", formData);      
       if(data.msg === 'Autenticado com sucesso!'){
-          Cookies.set('tokenMD', data.token, { expires: 1 }); // Expira em 1 dia (ajuste conforme necessário)
-        // window.location.href = '/userarea'; //alternativa
-        navigate(`/userarea`);
+        Cookies.set('tokenMD', data.token, { expires: 1 });
+        navigate("/user_area");
       }
     } catch(error){
-      console.log("deu errado a conexão com o server, erro:",error.message);
+      console.log("Falha na conexão com o server, erro: ",error.message);
     }
   };
-
-  const refactoring_handleSubmit = (e) => {
-    e.preventDefault();
-    //1.pegar dados do form 2.mostrar na tela e enviar para o server na rota /login com POST
-    //3.receber e armazenar o token
-  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,19 +27,20 @@ const LoginForm = () => {
 
   return (
     <div>
-      <h2>Login</h2>
+      <h1>Login</h1>
       <form
         onSubmit={(e) => handleSubmit(e)}
         style={{ flexDirection: "column" }}
       >
         <div style={{ flexDirection: "column" }}>
           <div>
-            <label htmlFor="email">Email </label>
+            <label htmlFor="email">Email ou Nome de Usuário </label>
           </div>
           <input
-            type="email"
+            type="text"
             id="email"
             name={"email"}
+            className="input-box"
             value={formData["email"]}
             onChange={(e) => {
               handleChange(e);
@@ -72,17 +53,17 @@ const LoginForm = () => {
             <label htmlFor="senha">Senha </label>
           </div>
           <input
-            type="senha"
+            type="password"
             id="senha"
             name={"senha"}
+            className="input-box"
             value={formData["senha"]}
             onChange={(e) => {
               handleChange(e);
             }}
           ></input>
         </div>
-
-        <button type="submit">Enviar</button>
+        <button type="submit" className="enviar-btn">Enviar</button>
       </form>
     </div>
   );

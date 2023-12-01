@@ -1,12 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-const banco = axios.create({
-  baseURL: "http://localhost:3001/",
-  timeout: 1000,
-  headers: {},
-});
+import Cookies from "js-cookie";
+import server from "../../axios"
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -16,23 +11,18 @@ const RegisterForm = () => {
     usuario:"",
     email: "",
     senha: "",
-  });
+  }); //refactoring: useReducer((state,action)=>{return{newobject}},initialState,function_init)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await banco.post("/register", formData);
-      console.log("deu certo a conexão com o server");
-      console.log('Register Form -> Resposta :',response)
-      setFormData({
-        nome: "",
-        usuario: "",
-        email: "",
-        senha: "",
-      });
-      navigate("/");//renderizar "usuário cadastrado com sucesso"
+      const {data} = await server.post("/register", formData);
+      if(data.msg === "Usuário cadastrado com sucesso!"){
+        Cookies.set('tokenMD',data.token,{expires:1})
+        navigate("/user_area");
+      }
     } catch (error){
-      console.log("deu errado a conexão com o server, erro: ",error);
+      console.log("Erro na conexão com o server, erro: ",error);
     }
   };
 
@@ -43,7 +33,7 @@ const RegisterForm = () => {
 
   return (
     <div>
-      <h2>Cadastre-se</h2>
+      <h1>Cadastre-se</h1>
       <form
         onSubmit={(e) => handleSubmit(e)}
         style={{ flexDirection: "column" }}
@@ -56,6 +46,7 @@ const RegisterForm = () => {
             type="text"
             id="nome"
             name={"nome"}
+            className="input-box"
             value={formData["nome"]}
             onChange={(e) => {
               handleChange(e);
@@ -71,6 +62,7 @@ const RegisterForm = () => {
             id="usuario"
             name={"usuario"}
             value={formData["usuario"]}
+            className="input-box"
             onChange={(e) => {
               handleChange(e);
             }}
@@ -83,6 +75,7 @@ const RegisterForm = () => {
           </div>
           <input
             type="email"
+            className="input-box"
             id="email"
             name={"email"}
             value={formData["email"]}
@@ -97,8 +90,9 @@ const RegisterForm = () => {
             <label htmlFor="senha">Senha </label>
           </div>
           <input
-            type="senha"
+            type="password"
             id="senha"
+            className="input-box"
             name={"senha"}
             value={formData["senha"]}
             onChange={(e) => {
@@ -106,8 +100,7 @@ const RegisterForm = () => {
             }}
           ></input>
         </div>
-
-        <button type="submit">Enviar</button>
+        <button type="submit" className="enviar-btn">Enviar</button>
       </form>
     </div>
   );
